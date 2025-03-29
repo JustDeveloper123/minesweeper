@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>%VITE_META_TITLE%</title>
+    <link rel="icon" href="/vite.svg" type="image/svg" />
+    <link rel="stylesheet" href="/src/styles/styles.scss" />
+    <script defer type="module" src="/src/js/main.js"></script>
+  </head>
+  <body>
+    <div
+      class="flex min-h-screen flex-col overflow-hidden bg-background text-text-accent"
+    >
+      <div class="container-md flex-auto">
+        <h1 class="title">Minesweeper</h1>
+        <div id="minesweeper"></div>
+      </div>
+
+      <div class="box-lg">
+        <hr class="h-1 bg-primary" />
+
+        <div class="container-md mt-4">
+          <p class="flex items-center justify-center">
+            Made for Cactus
+            <a href="./public/webp/cactus.webp" target="_blank">
+              <img
+                class="mx-1 h-6 w-6"
+                src="./public/webp/cactus.webp"
+                alt="Cactus"
+              />
+            </a>
+            with Love
+          </p>
+        </div>
+      </div>
+
+      <div id="overlays"></div>
+    </div>
+  </body>
+</html>

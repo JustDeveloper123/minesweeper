@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .title {
+    @apply text-center font-mono text-2xl leading-loose text-text;
+  }
+
+  .container-md {
+    @apply mx-auto w-full max-w-screen-md px-4;
+  }
+
+  .box {
+    @apply py-2;
+
+    &-lg {
+      @apply py-4;
+    }
+  }
+
+  .button {
+    @apply relative overflow-hidden px-4 py-1 text-text active:before:h-full active:before:w-full;
+
+    background: linear-gradient(
+      to right bottom,
+      var(--color-border-light) 50%,
+      var(--color-border-dark) 50%
+    );
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 80%;
+      background-color: var(--color-primary);
+      z-index: 0;
+    }
+  }
+}

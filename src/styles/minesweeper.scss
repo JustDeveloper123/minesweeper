@@ -1,0 +1,55 @@
+@layer components {
+  .minesweeper__cells {
+    @apply flex flex-wrap;
+  }
+
+  .minesweeper__cellItem {
+    @apply button aspect-square w-14 p-0;
+  }
+
+  .minesweeper__cellButton {
+    @apply relative h-full w-full p-1 font-bold;
+
+    &_revealed {
+      @apply border border-border bg-secondary;
+    }
+
+    &_bomb {
+      @apply border border-border bg-secondary;
+    }
+    &_targetBomb {
+      @apply bg-target-bomb;
+    }
+  }
+}
+
+.minesweeper__cellButton {
+  &_1 {
+    color: var(--color-number-1);
+  }
+  &_2 {
+    color: var(--color-number-2);
+  }
+  &_3 {
+    color: var(--color-number-3);
+  }
+  &_4 {
+    color: var(--color-number-4);
+  }
+  &_5 {
+    color: var(--color-number-5);
+  }
+  &_6 {
+    color: var(--color-number-6);
+  }
+
+  &_Easy {
+    @apply text-2xl;
+  }
+  &_Medium {
+    @apply text-xl;
+  }
+  &_Hard {
+    @apply text-sm;
+  }
+}

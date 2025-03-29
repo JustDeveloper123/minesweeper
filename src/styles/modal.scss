@@ -1,0 +1,5 @@
+@layer components {
+  .modal {
+    @apply pointer-events-none grid min-h-[200px] w-full max-w-[400px] bg-background p-2 opacity-0 transition;
+  }
+}
