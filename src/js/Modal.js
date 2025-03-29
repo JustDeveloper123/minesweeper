@@ -22,7 +22,7 @@ export class Modal {
       ...splitClass('opacity-100 pointer-events-auto'),
     );
     this.selectors.modal.classList.remove(
-      ...splitClass('opacity-0 pointer-events-none'),
+      ...splitClass('opacity-0 -translate-y-[200%] pointer-events-none'),
     );
     this.selectors.modal.classList.add(
       ...splitClass('opacity-100 pointer-events-auto'),
@@ -42,11 +42,14 @@ export class Modal {
       ...splitClass('opacity-100 pointer-events-auto'),
     );
     this.selectors.modal.classList.add(
-      ...splitClass('opacity-0 pointer-events-none'),
+      ...splitClass('opacity-0 -translate-y-[200%] pointer-events-none'),
     );
   }
 
-  setContent() {}
+  setContent(contentElement) {
+    this.selectors.modalContent.innerHTML = '';
+    this.selectors.modalContent.appendChild(contentElement);
+  }
 
   renderModal() {
     const overlayElement = document.createElement('div');
@@ -58,14 +61,28 @@ export class Modal {
     this.selectors.root.appendChild(overlayElement);
 
     const modalElement = document.createElement('div');
-    modalElement.classList.add('modal');
+    modalElement.classList.add(classNames.modal);
+    modalElement.innerHTML = `<div>
+        <div class="${classNames.modalTopBar}">
+          <button><span>&times;</span></button>
+        </div>
+        <div class="${classNames.modalContent}"><div>
+      </div>`;
+
+    // Add close event
+    modalElement
+      .querySelector(`.${classNames.modalTopBar} > button`)
+      .addEventListener('click', this.hide.bind(this));
 
     const modalWrapperElement = document.createElement('div');
     modalWrapperElement.className =
-      'fixed top-0 left-0 w-full h-full grid place-items-center bg-transparent z-50 pointer-events-none';
+      'fixed top-0 left-0 w-full h-full py-5 px-3 grid place-items-center bg-transparent z-50 pointer-events-none';
     modalWrapperElement.appendChild(modalElement);
 
     this.selectors.modal = modalElement;
+    this.selectors.modalContent = modalElement.querySelector(
+      '.' + classNames.modalContent,
+    );
     this.selectors.root.appendChild(modalWrapperElement);
   }
 }

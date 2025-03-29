@@ -2,7 +2,6 @@ import { classNames } from '@constants/classNames';
 import { difficulties } from '@constants/difficulties.js';
 import { IMAGE_MINE, IMAGE_RED_FLAG, IMAGE_TIMER } from '@constants/images.js';
 import { Modal } from '@js/Modal.js';
-import { splitClass } from '@/helpers/splitClass.js';
 
 const defaultOptions = {
   grid: difficulties[1].grid,
@@ -16,6 +15,7 @@ export class Minesweeper {
   cells = [];
   isNewGame = true;
   isGameOver = false;
+  isGameOngoing = false;
   difficulty = {};
   stats = {};
   states = {};
@@ -29,6 +29,7 @@ export class Minesweeper {
 
   init() {
     this.modal = new Modal();
+    this.states.beforeUnloadCallback = this.beforeUnloadCallback.bind(this);
 
     this.loadInterface();
     this.newGame();
@@ -145,10 +146,29 @@ export class Minesweeper {
     if (this.isNewGame) {
       this.placeMines.call(this, col, row);
       this.setTimer();
+      this.beforeUnload(true);
       this.isNewGame = false;
+      this.isGameOngoing = true;
+    } else {
+      this.beforeUnload(false);
     }
 
     this.revealCell(col, row);
+  }
+
+  beforeUnloadCallback(event) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  beforeUnload(active) {
+    const { beforeUnloadCallback } = this.states;
+
+    if (active) {
+      window.addEventListener('beforeunload', beforeUnloadCallback);
+    } else {
+      window.removeEventListener('beforeunload', beforeUnloadCallback);
+    }
   }
 
   updateStats() {
@@ -156,11 +176,18 @@ export class Minesweeper {
   }
 
   setDifficulty(difficulty) {
-    window.localStorage.setItem('difficulty', difficulty.label);
+    this.states.lastClickedDifficulty = difficulty;
 
-    this.grid = difficulty.grid;
-    this.minesAmount = difficulty.minesAmount;
-    this.difficulty = difficulty;
+    if (this.isGameOngoing) {
+      this.modal.show();
+    } else {
+      window.localStorage.setItem('difficulty', difficulty.label);
+
+      this.grid = difficulty.grid;
+      this.minesAmount = difficulty.minesAmount;
+      this.difficulty = difficulty;
+      this.beforeUnload(false);
+    }
   }
 
   getDifficultyByLabel(label) {
@@ -185,6 +212,7 @@ export class Minesweeper {
       );
 
       this.selectors.timer.textContent = `${minutes}:${seconds}`;
+      this.stats.timer = `${minutes}:${seconds}`;
     }, 1000);
   }
 
@@ -198,17 +226,25 @@ export class Minesweeper {
   }
 
   newGame() {
+    this.isNewGame = true;
     this.isGameOver = false;
+    this.isGameOngoing = false;
 
     if (this.selectors.cells) {
       this.selectors.cells.remove();
+    }
+    if (this.selectors.endGameInfo) {
+      this.selectors.endGameInfo.remove();
     }
     this.cells = [];
 
     const localDifficulty = this.getDifficultyByLabel(
       window.localStorage.getItem('difficulty'),
     );
-    if (difficulties.includes(localDifficulty)) {
+    if (
+      difficulties.includes(localDifficulty) &&
+      !this.states.lastClickedDifficulty
+    ) {
       this.setDifficulty(localDifficulty);
     }
 
@@ -223,6 +259,7 @@ export class Minesweeper {
 
   gameOver(targetCell) {
     this.isGameOver = true;
+    this.isGameOngoing = false;
 
     this.clearTimer({ clearLabel: false });
 
@@ -243,12 +280,15 @@ export class Minesweeper {
       mine.classList.add(classNames.cellButtonBomb);
       mine.innerHTML = `<img class="p-1" src="${IMAGE_MINE}" alt="">`;
     });
+
+    this.loadEndGameInfo();
   }
 
   loadInterface() {
     this.loadTopBar();
     this.loadDifficulties();
     this.loadGameStats();
+    this.loadModalContent();
   }
 
   loadTopBar() {
@@ -288,13 +328,14 @@ export class Minesweeper {
     difficultyElements.forEach((difficultyEl, index) => {
       difficultyEl.addEventListener('click', () => {
         this.setDifficulty(difficulties[index]);
-        this.newGame();
+        if (!this.isGameOngoing) {
+          this.newGame();
+        }
       });
     });
   }
 
   loadCells() {
-    this.isNewGame = true;
     const [cols] = this.grid;
     const cellsElement = document.createElement('ul', {});
     cellsElement.classList.add(classNames.cells, 'box');
@@ -338,5 +379,43 @@ export class Minesweeper {
 
     const timerElement = gameStatsElement.querySelector('#timer');
     this.selectors.timer = timerElement;
+  }
+
+  loadEndGameInfo() {
+    const html = `<div class="box grid place-items-center">
+        <p class="font-bold">You lost!</p>
+        <ul class="flex items-center text-lg gap-6 mt-2">
+          <li><p class="flex items-center gap-1"><img class="w-6 h-6" src=${IMAGE_TIMER} alt="">${this.stats.timer || '00:00'}</p></li>
+        </ul>
+        <button class="button mt-2" id="tryAgain"><span class="relative">Try again</span></button>
+      </div>`;
+
+    const endGameInfoElement = document.createElement('div');
+    endGameInfoElement.innerHTML = html;
+    this.selectors.endGameInfo = endGameInfoElement;
+    this.selectors.root.appendChild(endGameInfoElement);
+
+    const tryAgainButton = endGameInfoElement.querySelector('#tryAgain');
+    tryAgainButton.addEventListener('click', this.newGame.bind(this));
+  }
+
+  loadModalContent() {
+    const modalContentElement = document.createElement('div');
+
+    modalContentElement.innerHTML = `<div class="text-center box-lg">
+        <p class="text-lg">You will lose your progress. Restart?</p>
+        <button class="button mt-4"><span class="relative">Restart</span></button>
+      </div>`;
+
+    // Restart button event
+    const restartButton = modalContentElement.querySelector('button');
+    restartButton.addEventListener('click', () => {
+      this.isGameOngoing = false;
+      this.setDifficulty(this.states.lastClickedDifficulty);
+      this.newGame();
+      this.modal.hide();
+    });
+
+    this.modal.setContent(modalContentElement);
   }
 }

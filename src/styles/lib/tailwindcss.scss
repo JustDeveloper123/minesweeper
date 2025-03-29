@@ -4,7 +4,7 @@
 
 @layer components {
   .title {
-    @apply text-center font-mono text-2xl leading-loose text-text;
+    @apply text-text-secondary text-center font-mono text-2xl leading-loose;
   }
 
   .container-md {
@@ -20,7 +20,7 @@
   }
 
   .button {
-    @apply relative overflow-hidden px-4 py-1 text-text active:before:h-full active:before:w-full;
+    @apply text-text-secondary relative overflow-hidden px-4 py-1 active:before:h-full active:before:w-full;
 
     background: linear-gradient(
       to right bottom,

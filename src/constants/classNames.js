@@ -8,4 +8,7 @@ export const classNames = {
     `minesweeper__cellButton_${difficultyLabel}`,
   cellButtonBomb: 'minesweeper__cellButton_bomb',
   cellButtonTargetBomb: 'minesweeper__cellButton_targetBomb',
+  modal: 'modal',
+  modalTopBar: 'modal__topBar',
+  modalContent: 'modal__content',
 };

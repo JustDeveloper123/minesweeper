@@ -1,5 +1,15 @@
 @layer components {
   .modal {
     @apply pointer-events-none grid min-h-[200px] w-full max-w-[400px] bg-background p-2 opacity-0 transition;
+
+    &__topBar {
+      button {
+        @apply hover:bg-hover-primary ml-auto flex h-10 w-10 items-center justify-center p-0.5 text-2xl font-bold;
+      }
+
+      span {
+        @apply -translate-y-0.5;
+      }
+    }
   }
 }
