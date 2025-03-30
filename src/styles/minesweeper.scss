@@ -8,7 +8,7 @@
   }
 
   .minesweeper__cellButton {
-    @apply relative h-full w-full p-1 font-bold;
+    @apply relative h-full w-full p-0 font-bold leading-none md:p-1;
 
     &_revealed {
       @apply border border-border bg-secondary;
@@ -44,12 +44,12 @@
   }
 
   &_Easy {
-    @apply text-2xl;
+    @apply text-sm sm:text-xl md:text-2xl;
   }
   &_Medium {
-    @apply text-xl;
+    @apply text-sm-2xl sm:text-inherit md:text-xl;
   }
   &_Hard {
-    @apply text-sm;
+    @apply text-sm-2xl sm:text-sm-xl md:text-sm;
   }
 }

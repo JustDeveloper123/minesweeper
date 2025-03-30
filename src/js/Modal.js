@@ -3,13 +3,29 @@ import { splitClass } from '@/helpers/splitClass.js';
 
 const overlays = document.getElementById('overlays');
 
+const keyboardHideModal = ['Escape'];
+
 export class Modal {
   selectors = {};
   active = false;
 
   constructor({ root } = {}) {
     this.selectors.root = root || overlays;
+
+    this.init();
+  }
+
+  init() {
     this.renderModal();
+    this.keyboard();
+  }
+
+  keyboard() {
+    window.addEventListener('keydown', e => {
+      if (this.active && keyboardHideModal.includes(e.code)) {
+        this.hide();
+      }
+    });
   }
 
   show() {

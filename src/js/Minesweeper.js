@@ -105,13 +105,15 @@ export class Minesweeper {
     const cellElement = this.getCellElement(col, row);
 
     if (cell.isMine) {
-      this.gameOver([col, row]);
+      this.gameOver({ targetCell: [col, row] });
     } else if (cell.adjacentMines === 0) {
       this.revealAdjacentCells(col, row);
       this.styleCell.call(this, cell);
+      this.checkVictory();
     } else {
       cellElement.textContent = cell.adjacentMines || '';
       this.styleCell.call(this, cell);
+      this.checkVictory();
     }
   }
 
@@ -222,7 +224,27 @@ export class Minesweeper {
     }
     if (clearLabel) {
       this.selectors.timer.textContent = '00:00';
+      this.stats.timer = '00:00';
     }
+  }
+
+  checkVictory() {
+    const allValidCells = this.cells
+      .flatMap(row => row)
+      .filter(cell => !cell.isMine);
+    const areAllValidCellsRevealed = allValidCells.every(
+      cell => cell.isRevealed,
+    );
+
+    if (areAllValidCellsRevealed) {
+      this.victory();
+    }
+  }
+
+  victory() {
+    this.gameOver({ victory: true });
+    this.loadVictoryModal();
+    this.modal.show();
   }
 
   newGame() {
@@ -249,24 +271,27 @@ export class Minesweeper {
     }
 
     if (this.states.timerInstance) {
-      this.clearTimer();
+      this.clearTimer({ clearLabel: true });
     }
 
     this.createCells();
     this.loadCells();
     this.updateStats();
+    this.loadRestartModal();
   }
 
-  gameOver(targetCell) {
+  gameOver({ victory = false, targetCell } = {}) {
     this.isGameOver = true;
     this.isGameOngoing = false;
 
     this.clearTimer({ clearLabel: false });
 
     // Style target bomb
-    this.getCellElement(...targetCell).classList.add(
-      classNames.cellButtonTargetBomb,
-    );
+    if (targetCell) {
+      this.getCellElement(...targetCell).classList.add(
+        classNames.cellButtonTargetBomb,
+      );
+    }
 
     // Get all mines
     const allMines = this.cells.flatMap(row => row).filter(cell => cell.isMine);
@@ -281,14 +306,13 @@ export class Minesweeper {
       mine.innerHTML = `<img class="p-1" src="${IMAGE_MINE}" alt="">`;
     });
 
-    this.loadEndGameInfo();
+    this.loadEndGameInfo({ victory });
   }
 
   loadInterface() {
     this.loadTopBar();
     this.loadDifficulties();
     this.loadGameStats();
-    this.loadModalContent();
   }
 
   loadTopBar() {
@@ -337,8 +361,9 @@ export class Minesweeper {
 
   loadCells() {
     const [cols] = this.grid;
+
     const cellsElement = document.createElement('ul', {});
-    cellsElement.classList.add(classNames.cells, 'box');
+    cellsElement.className = `${classNames.cells} box`;
     this.selectors.root.appendChild(cellsElement);
     this.selectors.cells = cellsElement;
 
@@ -381,17 +406,22 @@ export class Minesweeper {
     this.selectors.timer = timerElement;
   }
 
-  loadEndGameInfo() {
+  loadEndGameInfo({ victory }) {
     const html = `<div class="box grid place-items-center">
-        <p class="font-bold">You lost!</p>
+        <p class="font-bold ${victory ? 'text-victory' : 'text-failure'}">${victory ? 'Victory!' : 'You lost!'}</p>
         <ul class="flex items-center text-lg gap-6 mt-2">
           <li><p class="flex items-center gap-1"><img class="w-6 h-6" src=${IMAGE_TIMER} alt="">${this.stats.timer || '00:00'}</p></li>
         </ul>
-        <button class="button mt-2" id="tryAgain"><span class="relative">Try again</span></button>
+        <button class="button mt-2" id="tryAgain"><span class="relative">${victory ? 'New game' : 'Try again'}</span></button>
       </div>`;
 
     const endGameInfoElement = document.createElement('div');
     endGameInfoElement.innerHTML = html;
+
+    if (this.selectors.endGameInfo) {
+      this.selectors.endGameInfo.remove();
+    }
+
     this.selectors.endGameInfo = endGameInfoElement;
     this.selectors.root.appendChild(endGameInfoElement);
 
@@ -399,16 +429,16 @@ export class Minesweeper {
     tryAgainButton.addEventListener('click', this.newGame.bind(this));
   }
 
-  loadModalContent() {
-    const modalContentElement = document.createElement('div');
+  loadRestartModal() {
+    const restartModalElement = document.createElement('div');
 
-    modalContentElement.innerHTML = `<div class="text-center box-lg">
+    restartModalElement.innerHTML = `<div class="text-center box-lg">
         <p class="text-lg">You will lose your progress. Restart?</p>
         <button class="button mt-4"><span class="relative">Restart</span></button>
       </div>`;
 
     // Restart button event
-    const restartButton = modalContentElement.querySelector('button');
+    const restartButton = restartModalElement.querySelector('button');
     restartButton.addEventListener('click', () => {
       this.isGameOngoing = false;
       this.setDifficulty(this.states.lastClickedDifficulty);
@@ -416,6 +446,23 @@ export class Minesweeper {
       this.modal.hide();
     });
 
-    this.modal.setContent(modalContentElement);
+    this.modal.setContent(restartModalElement);
+  }
+
+  loadVictoryModal() {
+    const victoryModalElement = document.createElement('div');
+
+    victoryModalElement.innerHTML = `<div class="text-center box-lg">
+        <p class="text-lg">Victory! Good boy</p>
+        <button class="button mt-4"><span class="relative">OK</span></button>
+      </div>`;
+
+    // OK button
+    const okButton = victoryModalElement.querySelector('button');
+    okButton.addEventListener('click', () => {
+      this.modal.hide();
+    });
+
+    this.modal.setContent(victoryModalElement);
   }
 }

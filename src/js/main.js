@@ -1,5 +1,6 @@
 import { Minesweeper } from '@js/Minesweeper.js';
+import './footer.js';
 
 const minesweeperRoot = document.getElementById('minesweeper');
 
-const minesweeper = new Minesweeper(minesweeperRoot);
+new Minesweeper(minesweeperRoot);
