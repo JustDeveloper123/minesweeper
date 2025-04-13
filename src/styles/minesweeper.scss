@@ -47,7 +47,7 @@
     @apply text-sm sm:text-xl md:text-2xl;
   }
   &_Medium {
-    @apply text-sm-2xl sm:text-inherit md:text-xl;
+    @apply text-sm-2xl md:text-xl;
   }
   &_Hard {
     @apply text-sm-2xl sm:text-sm-xl md:text-sm;
